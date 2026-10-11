@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Afterglow — a little better, every day</title>
+<meta name="description" content="Afterglow is a calm, private habit-tracking dashboard for small daily progress: habits, a gentle daily plan, a focus timer, and a tiny-step flow for low-motivation days. All data stays in your browser.">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#0b0f10">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/favicon.svg">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="styles/tokens.css">
+<link rel="stylesheet" href="styles/base.css">
+<link rel="stylesheet" href="styles/layout.css">
+<link rel="stylesheet" href="styles/components.css">
+<link rel="stylesheet" href="styles/views.css">
+<script>
+/* Apply the saved theme before first paint to avoid a flash of the wrong palette. */
+(function () {
+  try {
+    var raw = localStorage.getItem('afterglow:data');
+    var theme = 'dark';
+    if (raw) {
+      var parsed = JSON.parse(raw);
+      if (parsed && parsed.settings && (parsed.settings.theme === 'light' || parsed.settings.theme === 'dark')) {
+        theme = parsed.settings.theme;
+      }
+    }
+    document.documentElement.setAttribute('data-theme', theme);
+    document.documentElement.setAttribute('data-boot', 'pending');
+  } catch (e) { /* storage unavailable: keep the default dark theme */ }
+})();
+</script>
+</head>
+<body>
+<a class="skip-link" href="#view">Skip to main content</a>
+
+<!-- Decorative atmosphere: horizon glow, slow orb, dust motes. Hidden from assistive tech. -->
+<div class="atmosphere" aria-hidden="true">
+  <div class="atmosphere__glow"></div>
+  <div class="atmosphere__orb"></div>
+  <div class="atmosphere__motes">
+    <span></span><span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span><span></span>
+  </div>
+  <div class="atmosphere__grain"></div>
+</div>
+
+<!-- Inline icon sprite. Keeps the site dependency-free and works from file:// -->
+<svg class="sprite" aria-hidden="true" focusable="false" width="0" height="0">
+  <defs>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4v-5h-6v5H5a1 1 0 0 1-1-1z"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1.4"/><circle cx="4.5" cy="12" r="1.4"/><circle cx="4.5" cy="18" r="1.4"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5 9.5 17 19 7.5"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+    <symbol id="i-flow" viewBox="0 0 24 24"><path d="M5 7h9a4 4 0 0 1 0 8H8a4 4 0 0 0 0 8"/><path d="M15 4l3 3-3 3"/></symbol>
+    <symbol id="i-journey" viewBox="0 0 24 24"><path d="M4 18c3-8 6-11 8-11s2 3 4 3 4-1.5 4-1.5"/><circle cx="6" cy="19" r="1.5"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20h16"/><path d="M7 20v-6M12 20V7M17 20v-9"/></symbol>
+    <symbol id="i-journal" viewBox="0 0 24 24"><path d="M6 4h10a2 2 0 0 1 2 2v14H8a2 2 0 0 1-2-2z"/><path d="M9 8h6M9 12h4"/></symbol>
+    <symbol id="i-tools" viewBox="0 0 24 24"><path d="M14.7 6.3a3.6 3.6 0 0 1 4.9 4.9l-8 8-3.5.7.7-3.5z"/><path d="M4 20l3-3"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M18.4 5.6l-1.8 1.8M7.4 16.6l-1.8 1.8"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.5 1.5M16.9 16.9l1.5 1.5M18.4 5.6l-1.5 1.5M7.1 16.9l-1.5 1.5"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3.5 13.7 9l5.3 1.7L13.7 12.4 12 18l-1.7-5.6L5 10.7 10.3 9z"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4l10-10-4-4L4 16z"/><path d="M14.5 5.5 18.5 9.5"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V5h6v2M7 7l1 13h8l1-13"/></symbol>
+    <symbol id="i-archive" viewBox="0 0 24 24"><path d="M3 7h18v4H3zM5 11v9h14v-9"/><path d="M10 15h4"/></symbol>
+    <symbol id="i-skip" viewBox="0 0 24 24"><path d="M5 12h13"/><path d="M13 7l5 5-5 5"/></symbol>
+    <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 8H5v-4"/><path d="M5 8a8 8 0 1 1-1 6"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><path d="M9 5v14M15 5v14"/></symbol>
+    <symbol id="i-restart" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v4h-4"/></symbol>
+    <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M5 19c0-8 5-13 14-13 0 9-5 13-13 13z"/><path d="M5 19c3-5 6-7 10-8"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 19s-7-4.3-7-9a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 4.7-7 9-7 9z"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M5 5a2 2 0 0 1 2-2h11v18H7a2 2 0 0 1-2-2z"/><path d="M9 3v18"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11"/><path d="M8 11l4 4 4-4"/><path d="M5 19h14"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V5"/><path d="M8 9l4-4 4 4"/><path d="M5 19h14"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18" cy="12" r="1.6"/></symbol>
+    <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.2"/></symbol>
+  </defs>
+</svg>
+
+<div class="shell" id="shell">
+  <aside class="sidebar" id="sidebar" aria-label="Primary">
+    <div class="brand">
+      <span class="brand__mark" aria-hidden="true"><i></i></span>
+      <span class="brand__text">
+        <strong>Afterglow</strong>
+        <small>A little better, every day.</small>
+      </span>
+    </div>
+    <nav class="nav" aria-label="Sections">
+      <ul class="nav__list" id="nav-list"></ul>
+    </nav>
+    <div class="sidebar__foot">
+      <p class="sidebar__privacy" id="privacy-note">Everything stays in this browser. No account, no tracking.</p>
+      <button class="btn btn--ghost btn--tiny" type="button" data-action="open-settings">
+        <svg class="icon" aria-hidden="true"><use href="#i-settings"></use></svg>
+        <span>Settings</span>
+      </button>
+    </div>
+  </aside>
+
+  <div class="main-column">
+    <header class="topbar">
+      <button class="btn btn--icon topbar__menu" type="button" data-action="toggle-menu" aria-controls="sidebar" aria-expanded="false" aria-label="Show navigation">
+        <svg class="icon" aria-hidden="true"><use href="#i-menu"></use></svg>
+      </button>
+      <p class="topbar__context" id="topbar-context">Today</p>
+      <div class="topbar__actions">
+        <button class="btn btn--glow" type="button" data-action="open-motivation" id="motivation-cta">
+          <span class="btn__pulse" aria-hidden="true"></span>
+          <span class="btn__label-full">I have no motivation</span>
+          <span class="btn__label-short">No motivation?</span>
+        </button>
+        <button class="btn btn--icon" type="button" data-action="toggle-theme" aria-label="Switch to light theme" id="theme-toggle">
+          <svg class="icon" aria-hidden="true"><use href="#i-sun"></use></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="view" id="view" tabindex="-1" aria-live="off">
+      <div class="boot" id="boot">
+        <div class="boot__card">
+          <span class="orb orb--small" aria-hidden="true"></span>
+          <h1>Warming the room…</h1>
+          <p>If this message stays, something in the page scripts did not load. Reload the page, or open the browser console for details.</p>
+        </div>
+      </div>
+    </main>
+
+    <footer class="pagefoot">
+      <p>Afterglow stores your notes and progress locally on this device. Clearing browser data removes them — <button class="linkish" type="button" data-action="open-settings">export a backup</button> if you want to keep them safe.</p>
+      <p class="pagefoot__meta"><span id="storage-badge" class="badge badge--quiet">local storage</span> <span id="schema-badge" class="badge badge--quiet">schema v1</span></p>
+    </footer>
+  </div>
+</div>
+
+<nav class="mobilebar" aria-label="Quick navigation">
+  <ul id="mobile-nav" class="mobilebar__list"></ul>
+</nav>
+
+<div class="toasts" id="toast-region" role="status" aria-live="polite" aria-atomic="false"></div>
+<div id="dialog-root"></div>
+<div id="overlay-root"></div>
+
+<noscript>
+  <div class="noscript">
+    <h1>Afterglow needs JavaScript</h1>
+    <p>This page keeps all of its data in your browser, so it needs JavaScript enabled to run. Nothing is sent anywhere.</p>
+  </div>
+</noscript>
+
+<script src="scripts/dates.js"></script>
+<script src="scripts/store.js"></script>
+<script src="scripts/dom.js"></script>
+<script src="scripts/ui.js"></script>
+<script src="scripts/data.js"></script>
+<script src="scripts/habits.js"></script>
+<script src="scripts/motivation.js"></script>
+<script src="scripts/timer.js"></script>
+<script src="scripts/journey.js"></script>
+<script src="scripts/insights.js"></script>
+<script src="scripts/views/home.js"></script>
+<script src="scripts/views/habits.js"></script>
+<script src="scripts/views/flow.js"></script>
+<script src="scripts/views/focus.js"></script>
+<script src="scripts/views/journey.js"></script>
+<script src="scripts/views/progress.js"></script>
+<script src="scripts/views/journal.js"></script>
+<script src="scripts/views/tools.js"></script>
+<script src="scripts/views/settings.js"></script>
+<script src="scripts/onboarding.js"></script>
+<script src="scripts/motivation-modal.js"></script>
+<script src="scripts/editor.js"></script>
+<script src="scripts/app.js"></script>
+</body>
+</html>
